@@ -1,13 +1,18 @@
 from models.papel import PapelAcao
 from models.user import User
+from dotenv import load_dotenv
+
+load_dotenv() 
 
 
-#user = User()
-mglu3 = PapelAcao('oibr3')
+user = User(
+    ...
+)
 
+print(user)
+
+user.cadastrar()
 
 
 #print(mglu3)
 #print(user)
-
-print(mglu3.__dict__)

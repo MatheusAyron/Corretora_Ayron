@@ -1,12 +1,24 @@
-
-
-class User:
-    historico: float
-
+from pydantic import BaseModel
+import database
 
 
 
+class User(BaseModel):
+    '''  '''
+    nome: str
+    email: str
+    senha: str
+    cpf: str
+    patrimonio: float   = 0
+    saldo: float        = 0
 
+    def cadastrar(self):
+        ''' salva o User no banco de dados, se ja existir o usuario da erro. '''
+
+        # cpf unico
+        # email unico
+
+        database.client 
 
 ''' User
 {
