@@ -1,24 +1,56 @@
 from pydantic import BaseModel
 import database
-
-
+import bcrypt
 
 class User(BaseModel):
-    '''  '''
+    ''' Dados do usuario '''
     nome: str
     email: str
     senha: str
     cpf: str
     patrimonio: float   = 0
-    saldo: float        = 0
+    saldo_atual: float  = 0
 
     def cadastrar(self):
-        ''' salva o User no banco de dados, se ja existir o usuario da erro. '''
+        """ Insere o usúario no banco de dados, tabela user, e valida se o CPF ou Email ja existem """
 
-        # cpf unico
-        # email unico
+        if database.client.corretora_ayron.user.find({'cpf': self.cpf}).count() > 0:
+            raise ValueError('Registro CNPJ ja existente no banco, tabela user')
+        elif database.client.corretora_ayron.user.find({'email': self.email}).count() > 0:
+            raise ValueError('Registro EMAIL ja existente no banco, tabela user')
+        
+        database.client.corretora_ayron.user.insert(
+            {
+                'nome':         self.nome,
+                'email':        self.email,
+                'senha':        self.senha,
+                'cpf':          self.cpf,
+                'patrimonio' :  self.patrimonio,
+                'saldo_atual':  self.saldo_atual
+            }
+        )
 
-        database.client 
+
+
+"""  def historico(self):
+
+    database.client.corretora_ayron.historico.insert(
+        {
+            'cpf_user': database.client.corretora_ayron.user.find({'cpf': self.cpf}),
+            'tran': {
+                'papel': {
+                    'codigo': PapelAcao.codigo_acao,
+                    'preço_atual': self.preco_atual
+                }
+            }
+        }
+    ) """
+
+
+
+
+
+
 
 ''' User
 {
