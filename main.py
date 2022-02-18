@@ -1,22 +1,15 @@
-from models.papel import PapelAcao
+from models.papel import Papel
 from models.user import User
 from dotenv import load_dotenv
 
-
-
 load_dotenv() 
 
+user  = User.from_cpf('44444')
+papel = Papel('OIBR3')
 
-dados_user = User(
-    nome = 'Matheus Ayron',
-    email= 'gg@gmail.com',
-    senha= '123456',
-    cpf= '44444',
-    patrimonio= 450.3
-)
+print(user)
 
+user.comprar(papel, 10)
 
-dados_user.cadastrar()
+print(user)
 
-
-#print(dados_user.nome)

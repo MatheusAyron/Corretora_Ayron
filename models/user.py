@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 import database
 import bcrypt
+import pymongo
+from models.papel import Papel, PapelEmCarteira
+from models.exceptions import SaldoInsuficiente
+
 
 class User(BaseModel):
     ''' Dados do usuario '''
@@ -8,69 +12,60 @@ class User(BaseModel):
     email: str
     senha: str
     cpf: str
-    patrimonio: float   = 0
-    saldo_atual: float  = 0
+    patrimonio: float               = 0
+    saldo_atual: float              = 0
+    carteira: list[PapelEmCarteira] = [] 
+
+
+    @classmethod
+    def from_cpf(cls, cpf: str):
+        result = database.client.corretora_ayron.user.find_one({'cpf': cpf})
+        user   = User(**result)
+
+        return user
 
     def cadastrar(self):
         """ Insere o usúario no banco de dados, tabela user, e valida se o CPF ou Email ja existem """
-
-        if database.client.corretora_ayron.user.find({'cpf': self.cpf}).count() > 0:
-            raise ValueError('Registro CNPJ ja existente no banco, tabela user')
-        elif database.client.corretora_ayron.user.find({'email': self.email}).count() > 0:
-            raise ValueError('Registro EMAIL ja existente no banco, tabela user')
         
-        database.client.corretora_ayron.user.insert(
+        try: 
+            result = database.client.corretora_ayron.user.insert_one(self.dict())
+        except pymongo.errors.DuplicateKeyError as e:
+            raise ValueError from e
+
+        return result
+
+    def comprar(self, papel: Papel, qtd: int):
+        if (papel.preco_atual * qtd) > self.saldo_atual:
+            raise SaldoInsuficiente()
+        
+        self.saldo_atual -= papel.preco_atual * qtd
+
+        # se existir esse papel na carteira, atualiza o valor
+        #   self.carteira = 
+        # se não existir, cria esse elemento na carteira com a qtd atual/inicial
+        #   self.carteira = 
+        
+        database.client.corretora_ayron.user.update_one(
+            {'cpf': self.cpf}, 
             {
-                'nome':         self.nome,
-                'email':        self.email,
-                'senha':        self.senha,
-                'cpf':          self.cpf,
-                'patrimonio' :  self.patrimonio,
-                'saldo_atual':  self.saldo_atual
+                'saldo_atual': self.saldo_atual,
+                'carteira':    self.carteira
             }
         )
 
+        # adicionar essa transação ao historico
 
-
-"""  def historico(self):
-
-    database.client.corretora_ayron.historico.insert(
-        {
-            'cpf_user': database.client.corretora_ayron.user.find({'cpf': self.cpf}),
-            'tran': {
+        '''
+            {
+                'cpf_user': 'cpf',
+                'data_hora': '2000-00-00 00:00:00',
                 'papel': {
-                    'codigo': PapelAcao.codigo_acao,
-                    'preço_atual': self.preco_atual
-                }
+                    codigo: 'OIBR3',
+                    qtd: 100,
+                    valor_unitario: 0.5,
+                    valor_total: 50,
+                },
+                'qtd_apos_operacao': 200,
+                'operacao': 'VENDA', # ou COMPRA
             }
-        }
-    ) """
-
-
-
-
-
-
-
-''' User
-{
-    _id: "u01",
-    nome: "dasdasdas"
-}
-'''
-
-''' Historico
-{
-    _id: "t01",
-    id_user: "u01",
-    tran: {
-        'pelpel': {
-            codigo: 'oibr3'
-            proço_atual: 9323.3123
-        }
-        'op': 'VENDA',
-        'qtd': 312312,
-    }
-}
-
-'''
+        '''
