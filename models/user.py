@@ -4,7 +4,7 @@ import bcrypt
 import pymongo
 from models.papel import Papel, PapelEmCarteira
 from models.exceptions import SaldoInsuficiente
-from datetime import date
+from datetime import datetime
 
 
 class User(BaseModel):
@@ -69,32 +69,24 @@ class User(BaseModel):
 
         database.client.corretora_ayron.historico.insert_one({
             'cpf_user': self.cpf,
-            #'data_hora': [i.dict() for i in date.today()],
+            'data_hora': datetime.now().strftime('%d/%m/%Y %H:%M'),
             'papel': {
                 'codigo': papel.codigo_papel,
                 'qtd': qtd,
                 'valor_unitario': papel.preco_atual,
                 'valor_total': papel.preco_atual * qtd
             },
-            #'qtd_apos_operacao': ,
+            'qtd_total_carteira_apos_operacao': i.qtd,
             'operacao': 'compra'
         })
 
-        '''
-            {
-                'cpf_user': 'cpf',
-                'data_hora': '2000-00-00 00:00:00',
-                'papel': {
-                    codigo: 'OIBR3',
-                    qtd: 100,
-                    valor_unitario: 0.5,
-                    valor_total: 50,
-                },
-                'qtd_apos_operacao': 200,
-                'operacao': 'VENDA', # ou COMPRA
-            }
-        '''
+
+    def get_historico(cpf: str):
+        result_historico = database.client.corretora_ayron.historico.find_one({'cpf_user':cpf })
+
+        return result_historico
 
 
+#criar função get historico, e retornar pra nois todo o historico
 
-#criar funçõa get historico, e retorno pra nois todo o historico
+#Como eu pegaria somente a qtd total da ação apos a compra ou venda?

@@ -4,18 +4,20 @@ from models.papel import Papel
 from models.user import User
 
 
-""" dados_user = User(
+dados_user = User(
     nome = 'Matheus Ayron',
-    email= 'ttt@gmail.com',
+    email= 'matheus@gmail.com',
     senha= '123456',
     cpf= '8888888',
-    patrimonio= 450.3
-) """
+    saldo_atual = 5000
+)
 
 #dados_user.cadastrar()
-user  = User.from_cpf('44444')
-papel = Papel('AERI3')
+#user  = User.from_cpf('8888888')
 
-user.comprar(papel, 10)
+#papel = Papel('AERI3')
+#user.comprar(papel, 10)
 
-print(user)
+historico = User.get_historico('8888888')
+
+print(historico)
